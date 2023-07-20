@@ -1,0 +1,38 @@
+import socket
+import requests
+
+def send_student_id_to_server(student_id):
+    
+    server_address = "izani.synology.me"
+    server_port = 8443
+
+    
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect((server_address, server_port))
+
+   
+    client_socket.sendall(student_id.encode())
+
+    server_response = client_socket.recv(1024).decode()
+
+    client_socket.close()
+
+    return server_response
+
+def main():
+    
+    student_id = "2021817328"
+
+    server_response = send_student_id_to_server(student_id)
+
+    unique_url = server_response.strip()  # Remove any leading/trailing whitespaces
+
+    response = requests.get(unique_url)
+    if response.status_code == 200:
+        further_instructions = response.text
+        print(further_instructions)
+    else:
+        print("Failed to fetch further instructions from the server.")
+
+if __name__ == "__main__":
+    main()
