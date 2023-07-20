@@ -1,0 +1,93 @@
+QUESTION 2 (SERVER)
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+int generate_random_number() {
+    return (rand() % 900) + 100;
+}
+
+int main() {
+    srand(time(NULL));
+
+    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket == -1) {
+        perror("Error creating socket");
+        return 1;
+    }
+
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(8443); 
+
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
+        perror("Error binding socket");
+        close(server_socket);
+        return 1;
+    }
+
+    listen(server_socket, 5);
+
+    printf("Server is running and listening for incoming connections...\n");
+
+    struct sockaddr_in client_addr;
+    socklen_t client_addr_len = sizeof(client_addr);
+    int client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_addr_len);
+
+    if (client_socket == -1) {
+        perror("Error accepting connection");
+        close(server_socket);
+        return 1;
+    }
+
+    printf("Client connected!\n");
+
+    int random_number = generate_random_number();
+
+    send(client_socket, &random_number, sizeof(random_number), 0);
+
+    close(client_socket);
+    close(server_socket);
+
+    return 0;
+}
+
+
+QUESTION 2 (CLIENT)
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+int main() {
+    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_socket == -1) {
+        perror("Error creating socket");
+        return 1;
+    }
+
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(8443); 
+    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
+
+    if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
+        perror("Error connecting to server");
+        close(client_socket);
+        return 1;
+    }
+
+    int random_number;
+    recv(client_socket, &random_number, sizeof(random_number), 0);
+
+    printf("Received random number: %d\n", random_number);
+
+    close(client_socket);
+
+    return 0;
+}
