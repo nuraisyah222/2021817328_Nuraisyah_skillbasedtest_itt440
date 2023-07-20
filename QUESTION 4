@@ -1,0 +1,77 @@
+QUESTION 4 (SERVER)
+
+import socket
+import threading
+import random
+
+quotes = [
+    "cry.forgive.learn.move on. let your tears water the seeds of your future happiness",
+    "The greater your capacity to love, the greater your capacity to feel the pain",
+    "It's better to have loved and lost then never to have loved at all",
+    "The only way to do great work is to love what you do. - Steve Jobs",
+    "Success is not final, failure is not fatal: It is the courage to continue that counts."
+]
+
+def handle_client(client_socket):
+    quote = random.choice(quotes)
+
+    client_socket.send(quote.encode('utf-8'))
+
+    client_socket.close()
+
+def main():
+  
+    SERVER_IP = "0.0.0.0"
+    SERVER_PORT = 8888
+
+   
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+ 
+    server_address = (SERVER_IP, SERVER_PORT)
+    server_socket.bind(server_address)
+
+   
+    server_socket.listen(5)
+    print("Server listening on {}:{}".format(SERVER_IP, SERVER_PORT))
+
+    while True:
+      
+        client_socket, client_address = server_socket.accept()
+
+       
+        client_thread = threading.Thread(target=handle_client, args=(client_socket,))
+        client_thread.start()
+
+if _name_ == "_main_":
+    main()
+
+QUESTION 4 (CLIENT)
+
+import socket
+
+def main():
+    SERVER_IP = "192.168.41.131"  
+    SERVER_PORT = 8888
+
+   
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        server_address = (SERVER_IP, SERVER_PORT)
+        client_socket.connect(server_address)
+
+        quote = client_socket.recv(1024).decode('utf-8')
+
+        print("Received quote from server: {}".format(quote))
+
+    except Exception as e:
+        print("An error occurred:", str(e))
+
+    finally:
+        client_socket.close()
+
+if _name_ == "_main_":
+    main()
+
+
